@@ -1,71 +1,186 @@
-# Getting Started with Create React App
+# 🎲 Dice & Card Roller (React + Lottie + Bootstrap)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+An interactive mini‑app that rolls a die and draws playing cards with smooth Lottie animations. It showcases clean React component patterns, lightweight state management, and a modular UI built with `react-bootstrap`.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## ✨ Features
 
-### `npm start`
+- **Dice roller** with animation and running history gallery.
+- **Card drawer** with a full 54‑card deck (includes **Black Joker** and **Red Joker**), click the card name to toggle between **symbol view** (e.g., `Ace♥`) and **text view** (e.g., `Ace of hearts`).
+- **Reusable UI components**: Lottie animation wrapper, button bar, and image gallery.
+- **Tiny, readable utilities** for randomness and asset importing.
+- **Bootstrap‑powered layout** with responsive containers.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🧱 Tech stack
 
-### `npm test`
+- **React** (functional components + hooks)
+- **lottie-react** for animations
+- **react-bootstrap** for UI
+- **PNG assets** for dice faces and cards
+- **(Webpack)** `require.context` for importing asset folders (see Vite note below)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## 📦 Project structure (key parts)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```
+src/
+  components/
+    ButtonBar.js          # Reusable action bar with “Roll/Draw”, Delete, Delete All
+    Gallery.js            # Image strip to show history of results
+    LottieAnimation.js    # Thin wrapper around lottie-react for animations
+    RollADice.js          # Dice roller page: animation + state + gallery
+    DrawACard.js          # Card drawer page: animation + name toggle + gallery
+    Home.js               # Simple landing component
+    Car.js                # Example/demo component
+  util/
+    dice_util.js          # rollDice() and dice asset importer
+    card_util.js          # Joker-aware deck importer + determineCard() + drawCard()
+  resource/
+    dice/                 # dice face PNGs: 1.png ... 6.png
+    cards/                # card PNGs named as 1H, 2H ... 13H, ... plus JkrBlk.png, JkrRed.png
+    lottie/               # e.g., dice6.json, card_deck.json
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+> **Asset naming**
+>
+> - Dice: `resource/dice/1.png` … `6.png`
+> - Cards: `resource/cards/<rank><Suit>.png` where rank ∈ `1..13`, Suit ∈ `{H, D, S, C}` (e.g., `1H.png`), **plus** `JkrBlk.png` and `JkrRed.png`.
+>
+> Card order is computed programmatically; Jokers are appended to make a 54‑card deck.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+## 🚀 Getting started
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+1. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+2. **Add Bootstrap CSS** (in your app entry, typically `src/main.jsx` or `src/index.js`):
+   ```js
+   import 'bootstrap/dist/css/bootstrap.min.css';
+   ```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+3. **Run the app**
+   ```bash
+   # If using Vite:
+   npm run dev
+   # If using Create React App:
+   npm start
+   ```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+> If your toolchain is **Vite**, replace usages of `require.context` with `import.meta.glob`.
+> See the note in **Vite users** below.
 
-## Learn More
+---
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 🕹️ How it works (quick tour)
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Roll a die
+- `RollADice` keeps a small state: whether we’ve rolled, the current number, and the history list.
+- On **Roll**, it plays the Lottie dice animation, generates a number `1..6`, pushes it to history, and updates the display.
+- The **Gallery** renders the corresponding PNGs so the user sees the full roll history.
 
-### Code Splitting
+### Draw a card
+- `DrawACard` stores whether we’ve drawn, the current card index, and the history list.
+- On **Draw**, it plays a deck‑shuffle animation, generates an integer in `1..54`, and updates state.
+- Click the **card name** to toggle between a symbol label (e.g., `Queen♣`) and a full text label (e.g., `Queen of clubs`).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### Utilities
+- `dice_util`: `rollDice()` returns an integer `1..6`; `importAll()` loads dice face images.
+- `card_util`: builds a 54‑card deck that includes **Black Joker** and **Red Joker**; `determineCard()` supports `useSymbols` and `returnStructured` for flexible labeling; `drawCard()` returns `1..54`.
 
-### Analyzing the Bundle Size
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## 🧩 Component APIs (props)
 
-### Making a Progressive Web App
+### `<ButtonBar />`
+```ts
+handleAction: () => void        // primary action (Roll/Draw)
+handleDelete: () => void        // remove last history entry
+handleDeleteAll: () => void     // clear history
+move: string                    // button label ("Roll a Dice" | "Draw a Card")
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### `<Gallery />`
+```ts
+gallery: string[]               // list of image URLs/modules to render
+width?: number                  // each image width (px)
+height?: number                 // each image height (px)
+```
 
-### Advanced Configuration
+### `<LottieAnimation />`
+```ts
+lottieRef: React.Ref            // forwarded ref to control the animation
+handleLoaded: () => void        // called when the DOM is ready; can seek to last frame
+handleAction: object            // Lottie JSON data
+width?: number
+height?: number
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+---
 
-### Deployment
+## 🧪 Example usage
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+```jsx
+// Roll a die
+import RollADice from './components/RollADice';
+// Draw a card
+import DrawACard from './components/DrawACard';
+```
 
-### `npm run build` fails to minify
+Routes, nav, and layout are up to you—`Home` and `Car` are minimal examples you can delete or expand.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-# Dice-Roller
+---
+
+## 🛠️ Notes & tips
+
+- The deck includes **Jokers** by design; if you need a strict 52‑card deck, filter out results where `index >= 52`.
+- `determineCard(n, { useSymbols: true|false, returnStructured: true|false })` lets you format how card names appear.
+- The history galleries are intentionally simple; for large histories consider virtualization or pagination.
+- Lottie animation is initialized to the **last frame** so the page doesn’t auto‑animate on load.
+
+---
+
+## 🧭 For Vite users (replace `require.context`)
+
+If your bundler is Vite, rewrite the image importers with `import.meta.glob`:
+
+```js
+// dice_util.js
+const modules = import.meta.glob('../resource/dice/*.png', { eager: true });
+export const importAll = () => Object.values(modules).map((m) => m.default);
+```
+
+For cards, you may also build a sorted list from `import.meta.glob('../resource/cards/*.png', { eager: true })`
+and append the Joker images at the end.
+
+---
+
+## 🗺️ Roadmap ideas
+
+- Seedable RNG for reproducible rolls/draws
+- Probabilities & statistics panel (mean, variance, streaks)
+- Keyboard shortcuts (e.g., Space to roll/draw, Backspace to delete last)
+- Animated transitions for gallery updates
+- Theme switch (dark/light)
+- Sound effects timed to animation keyframes
+
+---
+
+## 📄 License
+
+MIT (or your choice).
+
+---
+
+## 🙌 Credits
+
+- Dice and card PNGs belong to their respective creators (add attribution if required).
+- Animations powered by **Lottie**.
+- UI powered by **react-bootstrap**.
